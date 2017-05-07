@@ -16,7 +16,7 @@
   register: result
 
 - name: reboot server
-  command: reboot
+  shell: ( sleep 3 && /sbin/reboot & )
   async: 0
   poll: 0
   ignore_errors: true
@@ -53,14 +53,17 @@
     mode: 0644
 
 - name: set the server_name
-  local_action: uri
-    url=https://robot-ws.your-server.de/server/{{ ansible_host }}
-    method=POST
-    user={{ hetzner_installimage_webservice_username }}
-    password={{ hetzner_installimage_webservice_password }}
-    force_basic_auth=yes
-    body='server_name={{ hetzner_server_name }}'
-    status_code=200
+  delegate_to: localhost
+  uri:
+    url: "https://robot-ws.your-server.de/reset/{{ ansible_host }}"
+    method: POST
+    user: "{{ hetzner_installimage_webservice_username }}"
+    password: "{{ hetzner_installimage_webservice_password }}"
+    force_basic_auth: yes
+    body: "server_name={{ hetzner_server_name }}"
+    status_code: 200
+    headers:
+      Content-Type: application/x-www-form-urlencoded
   register: hetzner_installimage_rescue
   when: hetzner_server_name is defined
 

@@ -25,7 +25,7 @@
   set_fact: hetzner_installimage_run=False
   when: hetzner_installimage_hostcode is defined and hetzner_installimage_hostcode.stat.exists == True and not hetzner_installimage_ignore_hostcode == True
 
-- name:
+- name: /etc/hostcode exists
   set_fact: hetzner_installimage_run=True
   when: hetzner_installimage_ignore_hostcode == True or (hetzner_installimage_hostcode is defined and hetzner_installimage_hostcode.stat.exists == False)
 
