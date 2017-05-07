@@ -1,5 +1,14 @@
 ---
 
+- name: check if server is booted in rescue mode
+  stat:
+    path: /root/.oldroot/nfs/install/installimage
+  register: hetzner_install_file_present
+
+- name: fail if server is not in rescue mode
+  fail: msg="The server is not running in rescue mode."
+  when: not hetzner_install_file_present.stat.exists
+
 - name: copy public key into tempfile
   shell: /usr/bin/tail -1 /root/.ssh/authorized_keys > tmpKey
 
@@ -16,16 +25,16 @@
   register: result
 
 - name: reboot server
-  shell: ( sleep 3 && /sbin/reboot & )
-  async: 0
+  shell: sleep 3 && shutdown -r now
+  async: 1
   poll: 0
   ignore_errors: true
 
-- name: remove server from local known_hosts file
-  local_action: shell ssh-keygen -R {{ ansible_host }}
-
 - name: pause a bit for the reboot to kick in
   pause: seconds=60
+
+- name: remove server from local known_hosts file
+  local_action: shell ssh-keygen -R {{ ansible_host }}
 
 - name: waiting for server to come back
   local_action: wait_for
